@@ -1,5 +1,7 @@
 # Ephemery
 
+[English](#ephemery) | [日本語](README_ja.md)
+
 A Windows tray application for capturing screenshots and clipboard images to temporary files, with hotkey-triggered path pasting.
 
 **Ephemery** (ephemeral + memory) - Temporary screenshot storage for quick file path access.
