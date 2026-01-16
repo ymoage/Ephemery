@@ -1,0 +1,30 @@
+# Dot files/folders (except .gitignore)
+.*
+!.gitignore
+
+# Build outputs
+out/
+build/
+*.exe
+*.obj
+*.lib
+*.dll
+*.exp
+*.pdb
+*.ilk
+*.res
+
+# Visual Studio files
+CMakeSettings.json
+CMakePresets.json
+*.user
+*.suo
+*.sln.docstates
+
+# Development docs (internal only)
+docs/
+specs/
+
+# Temporary files
+*.tmp
+*.log

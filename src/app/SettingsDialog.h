@@ -19,8 +19,8 @@ public:
     bool Show(HWND parent, AppSettings& settings, SettingsChangedCallback onChanged = nullptr);
 
 private:
-    static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    INT_PTR HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     bool CreateDialogControls(HWND hwnd);
     void OnInitDialog(HWND hwnd);

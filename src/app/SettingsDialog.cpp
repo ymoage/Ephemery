@@ -218,7 +218,7 @@ void SettingsDialog::OnInitDialog(HWND hwnd) {
     LOG_INFO(L"Settings dialog initialized");
 }
 
-INT_PTR CALLBACK SettingsDialog::DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK SettingsDialog::DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     SettingsDialog* dialog = nullptr;
 
     if (msg == WM_NCCREATE) {
@@ -236,7 +236,7 @@ INT_PTR CALLBACK SettingsDialog::DialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-INT_PTR SettingsDialog::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT SettingsDialog::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_COMMAND:
             OnCommand(hwnd, wParam, lParam);

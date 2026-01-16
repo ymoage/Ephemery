@@ -12,6 +12,8 @@ endif()
 # MSVC UTF-8 source encoding
 if(MSVC)
     add_compile_options(/utf-8)
+    # Use MultiThreadedDLL runtime for Release, MultiThreadedDebugDLL for Debug
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
 # Main executable
@@ -32,6 +34,7 @@ add_executable(Ephemery WIN32
     src/util/PngEncoder.cpp
     src/util/Logger.cpp
     resources/app.manifest
+    resources/app.rc
 )
 
 target_include_directories(Ephemery PRIVATE
@@ -40,6 +43,7 @@ target_include_directories(Ephemery PRIVATE
 
 # Link Windows libraries
 target_link_libraries(Ephemery PRIVATE
+    kernel32
     gdiplus
     shell32
     user32
