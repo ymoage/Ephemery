@@ -1,3 +1,31 @@
+# Ephemery v1.0.1
+
+Bug fix release with new quote style feature.
+
+## What's New
+
+✨ **Quote Style Option** - Wrap file paths with quotes (None/Double/Single/Backtick)
+
+## Bug Fixes
+
+🐛 **Settings Dialog** - Fixed OK/Cancel buttons not visible (incorrect window size calculation)
+🐛 **Startup Behavior** - Removed unnecessary file loading on app startup
+🐛 **Hotkey Persistence** - Fixed hardcoded hotkey values in settings file
+
+## Download
+
+- [Ephemery.exe (Release)](https://github.com/ymoage/Ephemery/releases/download/v1.0.1/Ephemery.exe)
+
+---
+
+**Full Changelog**: https://github.com/ymoage/Ephemery/compare/v1.0...v1.0.1
+
+---
+
+_Bug fixes verified by Claude Code - Ephemery's first user!_ 🐛✅
+
+---
+
 # Ephemery v1.0
 
 First stable release of Ephemery - A lightweight Windows screenshot utility for quick file path access.

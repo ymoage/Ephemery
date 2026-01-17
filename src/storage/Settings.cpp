@@ -56,6 +56,7 @@ bool Settings::Load() {
 
     std::string versionStr = findValue("version");
     std::string maxImagesStr = findValue("maxImages");
+    std::string quoteStyleStr = findValue("quoteStyle");
 
     if (!versionStr.empty()) {
         m_settings.version = static_cast<uint32_t>(std::stoi(versionStr));
@@ -64,6 +65,12 @@ bool Settings::Load() {
         m_settings.maxImages = static_cast<uint32_t>(std::stoi(maxImagesStr));
         if (m_settings.maxImages < 1) m_settings.maxImages = 1;
         if (m_settings.maxImages > 100) m_settings.maxImages = 100;
+    }
+    if (!quoteStyleStr.empty()) {
+        if (quoteStyleStr == "none") m_settings.quoteStyle = QuoteStyle::None;
+        else if (quoteStyleStr == "double") m_settings.quoteStyle = QuoteStyle::Double;
+        else if (quoteStyleStr == "single") m_settings.quoteStyle = QuoteStyle::Single;
+        else if (quoteStyleStr == "backtick") m_settings.quoteStyle = QuoteStyle::Backtick;
     }
 
     LOG_INFO(L"Settings loaded from: " + filePath);
@@ -85,14 +92,18 @@ bool Settings::Save() const {
         return false;
     }
 
+    std::string quoteStyleStr = "none";
+    switch (m_settings.quoteStyle) {
+        case QuoteStyle::None: quoteStyleStr = "none"; break;
+        case QuoteStyle::Double: quoteStyleStr = "double"; break;
+        case QuoteStyle::Single: quoteStyleStr = "single"; break;
+        case QuoteStyle::Backtick: quoteStyleStr = "backtick"; break;
+    }
+
     file << "{\n";
     file << "  \"version\": " << m_settings.version << ",\n";
     file << "  \"maxImages\": " << m_settings.maxImages << ",\n";
-    file << "  \"hotkeys\": {\n";
-    file << "    \"captureScreen\": { \"modifiers\": [\"Win\", \"Shift\"], \"key\": \"S\" },\n";
-    file << "    \"saveClipboard\": { \"modifiers\": [\"Win\", \"Shift\"], \"key\": \"C\" },\n";
-    file << "    \"pastePaths\": { \"modifiers\": [\"Win\", \"Shift\"], \"key\": \"V\" }\n";
-    file << "  }\n";
+    file << "  \"quoteStyle\": \"" << quoteStyleStr << "\"\n";
     file << "}\n";
 
     LOG_INFO(L"Settings saved to: " + filePath);

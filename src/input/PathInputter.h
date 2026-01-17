@@ -1,5 +1,6 @@
 #pragma once
 
+#include "storage/Types.h"
 #include <string>
 #include <vector>
 #include <Windows.h>
@@ -11,7 +12,7 @@ public:
     PathInputter() = default;
     ~PathInputter() = default;
 
-    bool TypePaths(const std::vector<std::wstring>& paths);
+    bool TypePaths(const std::vector<std::wstring>& paths, QuoteStyle quoteStyle = QuoteStyle::None);
     bool TypeText(const std::wstring& text);
 
     void SetDelayBetweenKeys(DWORD delayMs);

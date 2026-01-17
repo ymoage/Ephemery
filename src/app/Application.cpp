@@ -2,6 +2,7 @@
 #include "util/Logger.h"
 #include "util/PngEncoder.h"
 #include <shellapi.h>
+#include <ShlObj.h>
 
 namespace Ephemery {
 
@@ -21,6 +22,15 @@ Application* Application::GetInstance() {
 }
 
 bool Application::Initialize(HINSTANCE hInstance) {
+#ifdef _DEBUG
+    // Setup log file (Debug build only)
+    wchar_t appDataPath[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA, nullptr, 0, appDataPath))) {
+        std::wstring logPath = std::wstring(appDataPath) + L"\\Ephemery\\ephemery.log";
+        Logger::Instance().SetLogFile(logPath);
+    }
+#endif
+
     LOG_INFO(L"Initializing Ephemery...");
 
     // Initialize GDI+
@@ -38,9 +48,6 @@ bool Application::Initialize(HINSTANCE hInstance) {
         LOG_ERROR(L"Failed to initialize image storage");
         return false;
     }
-
-    // Load existing images
-    m_imageStorage.LoadExistingImages();
 
     // Create message-only window
     if (!CreateMessageWindow(hInstance)) {
@@ -301,7 +308,17 @@ void Application::OnPastePaths() {
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&start);
 
-    if (!m_pathInputter.TypePaths(paths)) {
+    const auto& settings = m_settings.GetSettings();
+    std::wstring quoteStyleName = L"None";
+    switch (settings.quoteStyle) {
+        case QuoteStyle::Double: quoteStyleName = L"Double"; break;
+        case QuoteStyle::Single: quoteStyleName = L"Single"; break;
+        case QuoteStyle::Backtick: quoteStyleName = L"Backtick"; break;
+        default: break;
+    }
+    LOG_INFO(L"Pasting paths with quote style: " + quoteStyleName);
+
+    if (!m_pathInputter.TypePaths(paths, settings.quoteStyle)) {
         LOG_ERROR(L"Failed to type paths");
     } else {
         // パス貼り付け成功後、リストのみクリア（ファイルは残す）

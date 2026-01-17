@@ -43,19 +43,27 @@ bool SettingsDialog::Show(HWND parent, AppSettings& settings, SettingsChangedCal
 
     RegisterClassExW(&wc);
 
+    // Calculate window size from desired client area
+    RECT clientRect = {0, 0, DIALOG_WIDTH, DIALOG_HEIGHT};
+    DWORD style = WS_POPUP | WS_CAPTION | WS_SYSMENU;
+    DWORD exStyle = WS_EX_DLGMODALFRAME | WS_EX_TOPMOST;
+    AdjustWindowRectEx(&clientRect, style, FALSE, exStyle);
+    int windowWidth = clientRect.right - clientRect.left;
+    int windowHeight = clientRect.bottom - clientRect.top;
+
     // Calculate dialog position (center on parent)
     RECT parentRect;
     GetWindowRect(parent ? parent : GetDesktopWindow(), &parentRect);
-    int x = parentRect.left + (parentRect.right - parentRect.left - DIALOG_WIDTH) / 2;
-    int y = parentRect.top + (parentRect.bottom - parentRect.top - DIALOG_HEIGHT) / 2;
+    int x = parentRect.left + (parentRect.right - parentRect.left - windowWidth) / 2;
+    int y = parentRect.top + (parentRect.bottom - parentRect.top - windowHeight) / 2;
 
     // Create dialog window
     HWND hwnd = CreateWindowExW(
-        WS_EX_DLGMODALFRAME | WS_EX_TOPMOST,
+        exStyle,
         className,
         L"Ephemery 設定",
-        WS_POPUP | WS_CAPTION | WS_SYSMENU,
-        x, y, DIALOG_WIDTH, DIALOG_HEIGHT,
+        style,
+        x, y, windowWidth, windowHeight,
         parent,
         nullptr,
         GetModuleHandle(nullptr),
@@ -184,7 +192,36 @@ bool SettingsDialog::CreateDialogControls(HWND hwnd) {
         leftMargin + labelWidth + 80, y + 3, 80, 18, hwnd, nullptr, hInst, nullptr);
     SendMessage(hwndLabel, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
 
-    y += rowHeight + 20;
+    y += rowHeight + 10;
+
+    // Quote style label and radio buttons
+    hwndLabel = CreateWindowExW(0, L"STATIC", L"引用符:",
+        WS_CHILD | WS_VISIBLE | SS_RIGHT,
+        leftMargin, y + 3, labelWidth, 18, hwnd, nullptr, hInst, nullptr);
+    SendMessage(hwndLabel, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+
+    int radioX = leftMargin + labelWidth + 10;
+    m_hwndQuoteNone = CreateWindowExW(0, L"BUTTON", L"なし",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON | WS_GROUP,
+        radioX, y, 60, 20, hwnd, reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_QUOTE_NONE)), hInst, nullptr);
+    SendMessage(m_hwndQuoteNone, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+
+    m_hwndQuoteDouble = CreateWindowExW(0, L"BUTTON", L"\"",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        radioX + 65, y, 40, 20, hwnd, reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_QUOTE_DOUBLE)), hInst, nullptr);
+    SendMessage(m_hwndQuoteDouble, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+
+    m_hwndQuoteSingle = CreateWindowExW(0, L"BUTTON", L"'",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        radioX + 110, y, 40, 20, hwnd, reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_QUOTE_SINGLE)), hInst, nullptr);
+    SendMessage(m_hwndQuoteSingle, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+
+    m_hwndQuoteBacktick = CreateWindowExW(0, L"BUTTON", L"`",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        radioX + 155, y, 40, 20, hwnd, reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_QUOTE_BACKTICK)), hInst, nullptr);
+    SendMessage(m_hwndQuoteBacktick, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+
+    y += rowHeight + 10;
 
     // OK and Cancel buttons
     int buttonWidth = 80;
@@ -214,6 +251,16 @@ void SettingsDialog::OnInitDialog(HWND hwnd) {
 
     // Set max images
     SetDlgItemInt(hwnd, IDC_MAX_IMAGES, m_tempSettings.maxImages, FALSE);
+
+    // Set quote style
+    int quoteRadioId = IDC_QUOTE_NONE;
+    switch (m_tempSettings.quoteStyle) {
+        case QuoteStyle::None: quoteRadioId = IDC_QUOTE_NONE; break;
+        case QuoteStyle::Double: quoteRadioId = IDC_QUOTE_DOUBLE; break;
+        case QuoteStyle::Single: quoteRadioId = IDC_QUOTE_SINGLE; break;
+        case QuoteStyle::Backtick: quoteRadioId = IDC_QUOTE_BACKTICK; break;
+    }
+    CheckRadioButton(hwnd, IDC_QUOTE_NONE, IDC_QUOTE_BACKTICK, quoteRadioId);
 
     LOG_INFO(L"Settings dialog initialized");
 }
@@ -301,9 +348,25 @@ bool SettingsDialog::OnOK(HWND hwnd) {
         return false;
     }
 
+    // Get quote style
+    QuoteStyle quoteStyle = QuoteStyle::None;
+    if (IsDlgButtonChecked(hwnd, IDC_QUOTE_DOUBLE) == BST_CHECKED) {
+        quoteStyle = QuoteStyle::Double;
+        LOG_INFO(L"Quote style: Double");
+    } else if (IsDlgButtonChecked(hwnd, IDC_QUOTE_SINGLE) == BST_CHECKED) {
+        quoteStyle = QuoteStyle::Single;
+        LOG_INFO(L"Quote style: Single");
+    } else if (IsDlgButtonChecked(hwnd, IDC_QUOTE_BACKTICK) == BST_CHECKED) {
+        quoteStyle = QuoteStyle::Backtick;
+        LOG_INFO(L"Quote style: Backtick");
+    } else {
+        LOG_INFO(L"Quote style: None");
+    }
+
     // Update settings
     m_settings->hotkeys = m_tempHotkeys;
     m_settings->maxImages = maxImages;
+    m_settings->quoteStyle = quoteStyle;
 
     // Notify callback
     if (m_onChanged) {

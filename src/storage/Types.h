@@ -18,6 +18,13 @@ enum class HotkeyAction {
     PastePaths
 };
 
+enum class QuoteStyle {
+    None,
+    Double,    // "path"
+    Single,    // 'path'
+    Backtick   // `path`
+};
+
 struct CapturedImage {
     std::wstring filePath;
     std::chrono::system_clock::time_point capturedAt;
@@ -37,6 +44,7 @@ struct AppSettings {
     uint32_t maxImages = 10;
     std::wstring storagePath;
     std::array<HotkeyBinding, 3> hotkeys;
+    QuoteStyle quoteStyle = QuoteStyle::None;
 };
 
 } // namespace Ephemery

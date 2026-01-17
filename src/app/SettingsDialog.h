@@ -43,6 +43,10 @@ private:
     HWND m_hwndClipboardHotkey = nullptr;
     HWND m_hwndPasteHotkey = nullptr;
     HWND m_hwndMaxImages = nullptr;
+    HWND m_hwndQuoteNone = nullptr;
+    HWND m_hwndQuoteDouble = nullptr;
+    HWND m_hwndQuoteSingle = nullptr;
+    HWND m_hwndQuoteBacktick = nullptr;
 
     std::array<HotkeyBinding, 3> m_tempHotkeys;
     int m_editingHotkeyIndex = -1;
@@ -55,9 +59,13 @@ private:
     static constexpr int IDC_PASTE_HOTKEY = 103;
     static constexpr int IDC_MAX_IMAGES = 104;
     static constexpr int IDC_MAX_IMAGES_SPIN = 105;
+    static constexpr int IDC_QUOTE_NONE = 106;
+    static constexpr int IDC_QUOTE_DOUBLE = 107;
+    static constexpr int IDC_QUOTE_SINGLE = 108;
+    static constexpr int IDC_QUOTE_BACKTICK = 109;
 
-    static constexpr int DIALOG_WIDTH = 350;
-    static constexpr int DIALOG_HEIGHT = 220;
+    static constexpr int DIALOG_WIDTH = 400;
+    static constexpr int DIALOG_HEIGHT = 300;
 };
 
 } // namespace Ephemery

@@ -3,10 +3,18 @@
 
 namespace Ephemery {
 
-bool PathInputter::TypePaths(const std::vector<std::wstring>& paths) {
+bool PathInputter::TypePaths(const std::vector<std::wstring>& paths, QuoteStyle quoteStyle) {
     if (paths.empty()) {
         LOG_WARNING(L"No paths to type");
         return false;
+    }
+
+    wchar_t quoteChar = L'\0';
+    switch (quoteStyle) {
+        case QuoteStyle::Double: quoteChar = L'"'; break;
+        case QuoteStyle::Single: quoteChar = L'\''; break;
+        case QuoteStyle::Backtick: quoteChar = L'`'; break;
+        default: break;
     }
 
     std::wstring combined;
@@ -14,7 +22,13 @@ bool PathInputter::TypePaths(const std::vector<std::wstring>& paths) {
         if (i > 0) {
             combined += L"\n";
         }
+        if (quoteChar != L'\0') {
+            combined += quoteChar;
+        }
         combined += paths[i];
+        if (quoteChar != L'\0') {
+            combined += quoteChar;
+        }
     }
 
     return TypeText(combined);

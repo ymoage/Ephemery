@@ -91,6 +91,7 @@ Ephemery stores captured images in your system's temporary folder:
 Right-click the tray icon → **Settings** to:
 - Change hotkeys
 - Adjust file retention limit (1-100)
+- **Choose quote style** (None/Double/Single/Backtick) - Wrap file paths with quotes when pasting
 
 ## Building from Source
 
