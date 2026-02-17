@@ -73,6 +73,24 @@ bool Settings::Load() {
         else if (quoteStyleStr == "backtick") m_settings.quoteStyle = QuoteStyle::Backtick;
     }
 
+    // Load hotkey bindings (hk<id>_mods, hk<id>_key)
+    for (auto& binding : m_settings.hotkeys) {
+        std::string modsKey = "hk" + std::to_string(binding.id) + "_mods";
+        std::string keyKey  = "hk" + std::to_string(binding.id) + "_key";
+        std::string modsStr = findValue(modsKey);
+        std::string keyStr  = findValue(keyKey);
+        if (!modsStr.empty()) {
+            binding.modifiers = static_cast<uint32_t>(std::stoi(modsStr));
+        }
+        if (!keyStr.empty()) {
+            std::wstring wkey(keyStr.begin(), keyStr.end());
+            uint32_t vk = HotkeyConfig::KeyToVirtualKey(wkey);
+            if (vk != 0) {
+                binding.virtualKey = vk;
+            }
+        }
+    }
+
     LOG_INFO(L"Settings loaded from: " + filePath);
     return true;
 }
@@ -103,8 +121,18 @@ bool Settings::Save() const {
     file << "{\n";
     file << "  \"version\": " << m_settings.version << ",\n";
     file << "  \"maxImages\": " << m_settings.maxImages << ",\n";
-    file << "  \"quoteStyle\": \"" << quoteStyleStr << "\"\n";
-    file << "}\n";
+    file << "  \"quoteStyle\": \"" << quoteStyleStr << "\"";
+
+    // Save hotkey bindings (hk<id>_mods, hk<id>_key)
+    for (const auto& binding : m_settings.hotkeys) {
+        std::wstring wkey = HotkeyConfig::VirtualKeyToKey(binding.virtualKey);
+        std::string key = wkey.empty() ? "" : std::string(1, static_cast<char>(wkey[0]));
+        file << ",\n";
+        file << "  \"hk" << binding.id << "_mods\": " << binding.modifiers << ",\n";
+        file << "  \"hk" << binding.id << "_key\": \"" << key << "\"";
+    }
+
+    file << "\n}\n";
 
     LOG_INFO(L"Settings saved to: " + filePath);
     return true;

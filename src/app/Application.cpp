@@ -76,7 +76,8 @@ bool Application::Initialize(HINSTANCE hInstance) {
     });
 
     // Register hotkeys (non-fatal if some fail)
-    if (!m_hotkeyManager.RegisterHotkeys(appSettings.hotkeys)) {
+    bool hotkeysOk = m_hotkeyManager.RegisterHotkeys(appSettings.hotkeys);
+    if (!hotkeysOk) {
         LOG_WARNING(L"Some hotkeys failed to register");
         m_trayIcon.ShowBalloon(L"Ephemery",
             L"一部のホットキーが登録できませんでした。\n他のアプリと競合している可能性があります。");
@@ -168,6 +169,10 @@ LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             m_hotkeyManager.HandleHotkey(static_cast<int>(wParam));
             return 0;
 
+        case WM_DEFERRED_PASTE:
+            OnPastePaths();
+            return 0;
+
         case TrayIcon::WM_TRAYICON:
             if (LOWORD(lParam) == WM_RBUTTONUP) {
                 m_trayIcon.ShowContextMenu(hwnd);
@@ -191,7 +196,8 @@ void Application::HandleHotkeyAction(HotkeyAction action) {
             OnSaveClipboard();
             break;
         case HotkeyAction::PastePaths:
-            OnPastePaths();
+            // WM_HOTKEY ハンドラー内で SendInput を呼ぶと Win11 24H2 でクラッシュするため遅延実行
+            PostMessage(m_hwnd, WM_DEFERRED_PASTE, 0, 0);
             break;
     }
 }

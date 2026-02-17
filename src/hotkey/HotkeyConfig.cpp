@@ -27,7 +27,7 @@ HotkeyBinding HotkeyConfig::GetDefaultHotkey(HotkeyAction action) {
             binding.id = HOTKEY_ID_SAVE_CLIPBOARD;
             break;
         case HotkeyAction::PastePaths:
-            binding.virtualKey = 'P';  // Ctrl+Alt+P
+            binding.virtualKey = 'V';  // Ctrl+Alt+V
             binding.id = HOTKEY_ID_PASTE_PATHS;
             break;
     }

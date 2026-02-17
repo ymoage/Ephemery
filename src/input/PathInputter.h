@@ -13,16 +13,11 @@ public:
     ~PathInputter() = default;
 
     bool TypePaths(const std::vector<std::wstring>& paths, QuoteStyle quoteStyle = QuoteStyle::None);
-    bool TypeText(const std::wstring& text);
-
-    void SetDelayBetweenKeys(DWORD delayMs);
 
 private:
-    bool SendUnicodeChar(wchar_t ch);
-    bool SendKeyInput(const std::vector<INPUT>& inputs);
-    void ReleaseModifierKeys();
-
-    DWORD m_delayBetweenKeys = 0;
+    void WaitForModifiersReleased();
+    bool SetClipboardText(const std::wstring& text);
+    bool SendCtrlV();
 };
 
 } // namespace Ephemery

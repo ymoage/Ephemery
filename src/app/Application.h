@@ -41,6 +41,10 @@ private:
     void OnShowSettings();
     void OnExit();
 
+    // Windows 11 24H2: WM_HOTKEY ハンドラー内から SendInput を呼ぶとクラッシュするため
+    // PostMessage でメッセージループに戻った後に実行する
+    static constexpr UINT WM_DEFERRED_PASTE = WM_APP + 1;
+
     static Application* s_instance;
 
     HWND m_hwnd = nullptr;

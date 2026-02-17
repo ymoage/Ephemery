@@ -11,114 +11,97 @@ bool PathInputter::TypePaths(const std::vector<std::wstring>& paths, QuoteStyle 
 
     wchar_t quoteChar = L'\0';
     switch (quoteStyle) {
-        case QuoteStyle::Double: quoteChar = L'"'; break;
-        case QuoteStyle::Single: quoteChar = L'\''; break;
-        case QuoteStyle::Backtick: quoteChar = L'`'; break;
+        case QuoteStyle::Double:   quoteChar = L'"';  break;
+        case QuoteStyle::Single:   quoteChar = L'\''; break;
+        case QuoteStyle::Backtick: quoteChar = L'`';  break;
         default: break;
     }
 
-    std::wstring combined;
+    std::wstring text;
     for (size_t i = 0; i < paths.size(); ++i) {
-        if (i > 0) {
-            combined += L"\n";
-        }
-        if (quoteChar != L'\0') {
-            combined += quoteChar;
-        }
-        combined += paths[i];
-        if (quoteChar != L'\0') {
-            combined += quoteChar;
-        }
+        if (i > 0) text += L"\n";
+        if (quoteChar != L'\0') text += quoteChar;
+        text += paths[i];
+        if (quoteChar != L'\0') text += quoteChar;
     }
 
-    return TypeText(combined);
-}
+    LOG_INFO(L"Pasting paths via clipboard: " + text.substr(0, 50) + (text.length() > 50 ? L"..." : L""));
 
-bool PathInputter::TypeText(const std::wstring& text) {
-    if (text.empty()) {
+    // Wait for hotkey modifier keys to be physically released.
+    // Prevents Ctrl+V from being interpreted as Ctrl+Alt+V (triggering our own hotkey).
+    WaitForModifiersReleased();
+
+    if (!SetClipboardText(text)) {
+        LOG_ERROR(L"Failed to set clipboard text");
         return false;
     }
 
-    LOG_INFO(L"Typing text: " + text.substr(0, 50) + (text.length() > 50 ? L"..." : L""));
-
-    // ホットキーの修飾キーが解放されるのを待つ
-    ReleaseModifierKeys();
-    Sleep(100);  // 修飾キー解放後の安定待ち
-
-    for (wchar_t ch : text) {
-        if (!SendUnicodeChar(ch)) {
-            LOG_ERROR(L"Failed to send character");
-            return false;
-        }
-
-        if (m_delayBetweenKeys > 0) {
-            Sleep(m_delayBetweenKeys);
-        }
-    }
-
-    return true;
+    return SendCtrlV();
 }
 
-void PathInputter::SetDelayBetweenKeys(DWORD delayMs) {
-    m_delayBetweenKeys = delayMs;
+void PathInputter::WaitForModifiersReleased() {
+    // Poll up to 2 seconds for Ctrl/Alt/Shift to be physically released.
+    // Necessary because WM_DEFERRED_PASTE can fire while the user still holds the hotkey.
+    const DWORD kTimeoutMs = 2000;
+    const DWORD deadline = GetTickCount() + kTimeoutMs;
+    while (GetTickCount() < deadline) {
+        const bool anyDown = (GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
+                             (GetAsyncKeyState(VK_MENU)    & 0x8000) ||
+                             (GetAsyncKeyState(VK_SHIFT)   & 0x8000);
+        if (!anyDown) break;
+        Sleep(10);
+    }
+    Sleep(50); // Extra stability delay after modifier release
 }
 
-bool PathInputter::SendUnicodeChar(wchar_t ch) {
-    std::vector<INPUT> inputs;
-
-    if (ch == L'\n') {
-        INPUT input = {};
-        input.type = INPUT_KEYBOARD;
-        input.ki.wVk = VK_RETURN;
-        inputs.push_back(input);
-
-        input.ki.dwFlags = KEYEVENTF_KEYUP;
-        inputs.push_back(input);
-    } else {
-        INPUT input = {};
-        input.type = INPUT_KEYBOARD;
-        input.ki.wScan = ch;
-        input.ki.dwFlags = KEYEVENTF_UNICODE;
-        inputs.push_back(input);
-
-        input.ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
-        inputs.push_back(input);
+bool PathInputter::SetClipboardText(const std::wstring& text) {
+    if (!OpenClipboard(nullptr)) {
+        return false;
     }
 
-    return SendKeyInput(inputs);
+    EmptyClipboard();
+
+    const size_t byteCount = (text.size() + 1) * sizeof(wchar_t);
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, byteCount);
+    if (!hMem) {
+        CloseClipboard();
+        return false;
+    }
+
+    wchar_t* dst = static_cast<wchar_t*>(GlobalLock(hMem));
+    wmemcpy(dst, text.c_str(), text.size() + 1);
+    GlobalUnlock(hMem);
+
+    // On success the system owns hMem; on failure we must free it.
+    const bool ok = SetClipboardData(CF_UNICODETEXT, hMem) != nullptr;
+    if (!ok) {
+        GlobalFree(hMem);
+    }
+
+    CloseClipboard();
+    return ok;
 }
 
-bool PathInputter::SendKeyInput(const std::vector<INPUT>& inputs) {
-    if (inputs.empty()) {
-        return true;
-    }
+bool PathInputter::SendCtrlV() {
+    INPUT inputs[4] = {};
 
-    UINT sent = SendInput(static_cast<UINT>(inputs.size()),
-                          const_cast<INPUT*>(inputs.data()),
-                          sizeof(INPUT));
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_CONTROL;                          // Ctrl down
 
-    return sent == inputs.size();
-}
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = 'V';                                 // V down
 
-void PathInputter::ReleaseModifierKeys() {
-    // Ctrl, Alt, Shift, Win キーを解放
-    std::vector<INPUT> inputs;
-    WORD keys[] = { VK_CONTROL, VK_MENU, VK_SHIFT, VK_LWIN, VK_RWIN };
+    inputs[2].type = INPUT_KEYBOARD;
+    inputs[2].ki.wVk = 'V';
+    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;                 // V up
 
-    for (WORD vk : keys) {
-        if (GetAsyncKeyState(vk) & 0x8000) {
-            INPUT input = {};
-            input.type = INPUT_KEYBOARD;
-            input.ki.wVk = vk;
-            input.ki.dwFlags = KEYEVENTF_KEYUP;
-            inputs.push_back(input);
-        }
-    }
+    inputs[3].type = INPUT_KEYBOARD;
+    inputs[3].ki.wVk = VK_CONTROL;
+    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;                 // Ctrl up
 
-    if (!inputs.empty()) {
-        SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
-        LOG_INFO(L"Released " + std::to_wstring(inputs.size()) + L" modifier keys");
-    }
+    const UINT sent = SendInput(4, inputs, sizeof(INPUT));
+    LOG_INFO(L"Ctrl+V sent (" + std::to_wstring(sent) + L"/4 events)");
+    return sent == 4;
 }
 
 } // namespace Ephemery
