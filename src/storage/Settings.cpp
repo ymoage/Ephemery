@@ -126,7 +126,8 @@ bool Settings::Save() const {
     // Save hotkey bindings (hk<id>_mods, hk<id>_key)
     for (const auto& binding : m_settings.hotkeys) {
         std::wstring wkey = HotkeyConfig::VirtualKeyToKey(binding.virtualKey);
-        std::string key = wkey.empty() ? "" : std::string(1, static_cast<char>(wkey[0]));
+        std::string key;
+        for (wchar_t c : wkey) key += static_cast<char>(c);
         file << ",\n";
         file << "  \"hk" << binding.id << "_mods\": " << binding.modifiers << ",\n";
         file << "  \"hk" << binding.id << "_key\": \"" << key << "\"";

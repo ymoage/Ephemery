@@ -58,6 +58,18 @@ std::vector<std::wstring> HotkeyConfig::Win32ToModifiers(uint32_t modifiers) {
 uint32_t HotkeyConfig::KeyToVirtualKey(const std::wstring& key) {
     if (key.empty()) return 0;
 
+    // F-keys: "F1"-"F12"
+    if ((key[0] == L'F' || key[0] == L'f') && key.length() >= 2) {
+        int n = 0;
+        for (size_t i = 1; i < key.length(); ++i) {
+            if (key[i] < L'0' || key[i] > L'9') { n = 0; break; }
+            n = n * 10 + (key[i] - L'0');
+        }
+        if (n >= 1 && n <= 12) {
+            return static_cast<uint32_t>(VK_F1 + n - 1);
+        }
+    }
+
     wchar_t ch = std::towupper(key[0]);
     if (ch >= L'A' && ch <= L'Z') {
         return static_cast<uint32_t>(ch);
@@ -75,6 +87,9 @@ std::wstring HotkeyConfig::VirtualKeyToKey(uint32_t vk) {
     }
     if (vk >= '0' && vk <= '9') {
         return std::wstring(1, static_cast<wchar_t>(vk));
+    }
+    if (vk >= VK_F1 && vk <= VK_F12) {
+        return L"F" + std::to_wstring(vk - VK_F1 + 1);
     }
     return L"";
 }

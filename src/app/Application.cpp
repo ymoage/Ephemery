@@ -22,14 +22,16 @@ Application* Application::GetInstance() {
 }
 
 bool Application::Initialize(HINSTANCE hInstance) {
-#ifdef _DEBUG
-    // Setup log file (Debug build only)
+    // Setup log file (always enabled for diagnostics)
     wchar_t appDataPath[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA, nullptr, 0, appDataPath))) {
-        std::wstring logPath = std::wstring(appDataPath) + L"\\Ephemery\\ephemery.log";
+        std::wstring logDir  = std::wstring(appDataPath) + L"\\Ephemery";
+        std::wstring logPath = logDir + L"\\ephemery.log";
+        // Ensure directory exists
+        CreateDirectoryW(logDir.c_str(), nullptr);
+        Logger::Instance().SetLogLevel(LogLevel::Info);
         Logger::Instance().SetLogFile(logPath);
     }
-#endif
 
     LOG_INFO(L"Initializing Ephemery...");
 
@@ -166,6 +168,7 @@ LRESULT CALLBACK Application::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_HOTKEY:
+            LOG_DEBUG(L"WM_HOTKEY received: id=" + std::to_wstring(wParam));
             m_hotkeyManager.HandleHotkey(static_cast<int>(wParam));
             return 0;
 
@@ -179,7 +182,12 @@ LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             }
             return 0;
 
+        case WM_CLOSE:
+            LOG_WARNING(L"WM_CLOSE received (external close request)");
+            break;  // Let DefWindowProcW handle it (calls DestroyWindow)
+
         case WM_DESTROY:
+            LOG_INFO(L"WM_DESTROY received");
             PostQuitMessage(0);
             return 0;
     }
