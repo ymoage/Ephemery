@@ -41,10 +41,12 @@ private:
     bool m_consoleOutput = true;
 };
 
-// Convenience macros
-#define LOG_DEBUG(msg) Ephemery::Logger::Instance().Debug(msg)
-#define LOG_INFO(msg) Ephemery::Logger::Instance().Info(msg)
-#define LOG_WARNING(msg) Ephemery::Logger::Instance().Warning(msg)
-#define LOG_ERROR(msg) Ephemery::Logger::Instance().Error(msg)
+// Logging is disabled in release builds.
+// To re-enable: restore the macro definitions below and call
+// Logger::Instance().SetLogFile(...) in Application::Initialize().
+#define LOG_DEBUG(msg)   ((void)0)
+#define LOG_INFO(msg)    ((void)0)
+#define LOG_WARNING(msg) ((void)0)
+#define LOG_ERROR(msg)   ((void)0)
 
 } // namespace Ephemery

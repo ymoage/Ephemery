@@ -22,18 +22,6 @@ Application* Application::GetInstance() {
 }
 
 bool Application::Initialize(HINSTANCE hInstance) {
-    // Setup log file (always enabled for diagnostics)
-    wchar_t appDataPath[MAX_PATH];
-    if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA, nullptr, 0, appDataPath))) {
-        std::wstring logDir  = std::wstring(appDataPath) + L"\\Ephemery";
-        std::wstring logPath = logDir + L"\\ephemery.log";
-        // Ensure directory exists
-        CreateDirectoryW(logDir.c_str(), nullptr);
-        Logger::Instance().SetLogLevel(LogLevel::Info);
-        Logger::Instance().SetLogFile(logPath);
-    }
-
-    LOG_INFO(L"Initializing Ephemery...");
 
     // Initialize GDI+
     if (!PngEncoder::Initialize()) {
