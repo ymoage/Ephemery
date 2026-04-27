@@ -12,8 +12,9 @@ public:
     static constexpr int HOTKEY_ID_CAPTURE_SCREEN = 1;
     static constexpr int HOTKEY_ID_SAVE_CLIPBOARD = 2;
     static constexpr int HOTKEY_ID_PASTE_PATHS = 3;
+    static constexpr int HOTKEY_ID_CLEAR_PATHS = 4;
 
-    static std::array<HotkeyBinding, 3> GetDefaultHotkeys();
+    static std::array<HotkeyBinding, 4> GetDefaultHotkeys();
     static HotkeyBinding GetDefaultHotkey(HotkeyAction action);
 
     static uint32_t ModifiersToWin32(const std::vector<std::wstring>& modifiers);

@@ -195,6 +195,9 @@ void Application::HandleHotkeyAction(HotkeyAction action) {
             // WM_HOTKEY ハンドラー内で SendInput を呼ぶと Win11 24H2 でクラッシュするため遅延実行
             PostMessage(m_hwnd, WM_DEFERRED_PASTE, 0, 0);
             break;
+        case HotkeyAction::ClearPaths:
+            OnClearPaths();
+            break;
     }
 }
 
@@ -331,6 +334,20 @@ void Application::OnPastePaths() {
     QueryPerformanceCounter(&end);
     double elapsedMs = (end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart;
     LOG_INFO(L"Path input completed in " + std::to_wstring(static_cast<int>(elapsedMs)) + L"ms (target: <500ms)");
+}
+
+void Application::OnClearPaths() {
+    LOG_INFO(L"ClearPaths triggered");
+
+    size_t count = m_imageStorage.Count();
+    if (count == 0) {
+        m_trayIcon.ShowBalloon(L"Ephemery", L"クリアするパスはありません");
+        return;
+    }
+
+    m_imageStorage.ClearList();
+    m_trayIcon.ShowBalloon(L"Ephemery",
+        std::to_wstring(count) + L"件のパスをクリアしました");
 }
 
 void Application::OnOpenFolder() {

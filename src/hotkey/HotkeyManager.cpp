@@ -21,7 +21,7 @@ void HotkeyManager::Shutdown() {
     m_hwnd = nullptr;
 }
 
-bool HotkeyManager::RegisterHotkeys(const std::array<HotkeyBinding, 3>& bindings) {
+bool HotkeyManager::RegisterHotkeys(const std::array<HotkeyBinding, 4>& bindings) {
     if (m_hwnd == nullptr) {
         LOG_ERROR(L"HotkeyManager not initialized");
         return false;

@@ -4,11 +4,12 @@
 
 namespace Ephemery {
 
-std::array<HotkeyBinding, 3> HotkeyConfig::GetDefaultHotkeys() {
+std::array<HotkeyBinding, 4> HotkeyConfig::GetDefaultHotkeys() {
     return {
         GetDefaultHotkey(HotkeyAction::CaptureScreen),
         GetDefaultHotkey(HotkeyAction::SaveClipboard),
-        GetDefaultHotkey(HotkeyAction::PastePaths)
+        GetDefaultHotkey(HotkeyAction::PastePaths),
+        GetDefaultHotkey(HotkeyAction::ClearPaths)
     };
 }
 
@@ -29,6 +30,10 @@ HotkeyBinding HotkeyConfig::GetDefaultHotkey(HotkeyAction action) {
         case HotkeyAction::PastePaths:
             binding.virtualKey = 'V';  // Ctrl+Alt+V
             binding.id = HOTKEY_ID_PASTE_PATHS;
+            break;
+        case HotkeyAction::ClearPaths:
+            binding.virtualKey = 'X';  // Ctrl+Alt+X
+            binding.id = HOTKEY_ID_CLEAR_PATHS;
             break;
     }
 

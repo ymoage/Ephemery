@@ -15,7 +15,8 @@ enum class CaptureSource {
 enum class HotkeyAction {
     CaptureScreen,
     SaveClipboard,
-    PastePaths
+    PastePaths,
+    ClearPaths
 };
 
 enum class QuoteStyle {
@@ -43,7 +44,7 @@ struct AppSettings {
     uint32_t version = 1;
     uint32_t maxImages = 10;
     std::wstring storagePath;
-    std::array<HotkeyBinding, 3> hotkeys;
+    std::array<HotkeyBinding, 4> hotkeys;
     QuoteStyle quoteStyle = QuoteStyle::None;
 };
 

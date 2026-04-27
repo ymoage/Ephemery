@@ -37,6 +37,7 @@ private:
     void OnCaptureScreen();
     void OnSaveClipboard();
     void OnPastePaths();
+    void OnClearPaths();
     void OnOpenFolder();
     void OnShowSettings();
     void OnExit();

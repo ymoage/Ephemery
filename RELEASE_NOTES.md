@@ -1,3 +1,25 @@
+# Ephemery v1.1.0
+
+新しいホットキー「パスのクリア」を追加しました。
+
+## What's New
+
+✨ **パスのクリア機能** - 取得済みパスのリストを貼り付けずにクリアできるホットキーを追加
+  - デフォルト: `Ctrl+Alt+X`
+  - 設定ダイアログから変更可能
+  - 間違ってキャプチャしたときに、貼り付けずにリストだけ取り消せます
+  - ファイル本体は残るので、保持上限による自動削除に任せられます
+
+## Download
+
+- [Ephemery.exe (Release)](https://github.com/ymoage/Ephemery/releases/download/v1.1.0/Ephemery.exe)
+
+---
+
+**Full Changelog**: https://github.com/ymoage/Ephemery/compare/v1.0.2...v1.1.0
+
+---
+
 # Ephemery v1.0.1
 
 Bug fix release with new quote style feature.

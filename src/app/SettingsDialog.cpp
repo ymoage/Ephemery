@@ -166,6 +166,21 @@ bool SettingsDialog::CreateDialogControls(HWND hwnd) {
     SendMessage(m_hwndPasteHotkey, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
     SetWindowLongPtrW(m_hwndPasteHotkey, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(HotkeyEditProc));
 
+    y += rowHeight;
+
+    // Clear paths hotkey label and edit
+    hwndLabel = CreateWindowExW(0, L"STATIC", L"パスのクリア:",
+        WS_CHILD | WS_VISIBLE | SS_RIGHT,
+        leftMargin, y + 3, labelWidth, 18, hwnd, nullptr, hInst, nullptr);
+    SendMessage(hwndLabel, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+
+    m_hwndClearHotkey = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_READONLY,
+        leftMargin + labelWidth + 10, y, editWidth, editHeight,
+        hwnd, reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_CLEAR_HOTKEY)), hInst, nullptr);
+    SendMessage(m_hwndClearHotkey, WM_SETFONT, reinterpret_cast<WPARAM>(hFont), TRUE);
+    SetWindowLongPtrW(m_hwndClearHotkey, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(HotkeyEditProc));
+
     y += rowHeight + 10;
 
     // Max images label and spin control
@@ -248,6 +263,7 @@ void SettingsDialog::OnInitDialog(HWND hwnd) {
     UpdateHotkeyDisplay(hwnd, IDC_CAPTURE_HOTKEY, m_tempHotkeys[0]);
     UpdateHotkeyDisplay(hwnd, IDC_CLIPBOARD_HOTKEY, m_tempHotkeys[1]);
     UpdateHotkeyDisplay(hwnd, IDC_PASTE_HOTKEY, m_tempHotkeys[2]);
+    UpdateHotkeyDisplay(hwnd, IDC_CLEAR_HOTKEY, m_tempHotkeys[3]);
 
     // Set max images
     SetDlgItemInt(hwnd, IDC_MAX_IMAGES, m_tempSettings.maxImages, FALSE);
@@ -327,6 +343,7 @@ void SettingsDialog::OnHotkeyChange(HWND hwnd, int controlId) {
         case IDC_CAPTURE_HOTKEY: index = 0; break;
         case IDC_CLIPBOARD_HOTKEY: index = 1; break;
         case IDC_PASTE_HOTKEY: index = 2; break;
+        case IDC_CLEAR_HOTKEY: index = 3; break;
     }
 
     if (index >= 0) {
@@ -391,7 +408,7 @@ void SettingsDialog::UpdateHotkeyDisplay(HWND hwnd, int controlId, const HotkeyB
 
 bool SettingsDialog::ValidateSettings(HWND hwnd) {
     // Check for hotkey conflicts
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         if (IsHotkeyConflict(m_tempHotkeys[i], m_tempHotkeys[i].action)) {
             std::wstring msg = L"ホットキー「" + HotkeyConfig::HotkeyToString(m_tempHotkeys[i]) +
                               L"」は他の機能と重複しています。";
@@ -446,6 +463,7 @@ LRESULT CALLBACK SettingsDialog::HotkeyEditProc(HWND hwnd, UINT msg, WPARAM wPar
             case IDC_CAPTURE_HOTKEY: index = 0; break;
             case IDC_CLIPBOARD_HOTKEY: index = 1; break;
             case IDC_PASTE_HOTKEY: index = 2; break;
+            case IDC_CLEAR_HOTKEY: index = 3; break;
         }
 
         if (index >= 0) {

@@ -17,7 +17,7 @@ public:
     bool Initialize(HWND hwnd);
     void Shutdown();
 
-    bool RegisterHotkeys(const std::array<HotkeyBinding, 3>& bindings);
+    bool RegisterHotkeys(const std::array<HotkeyBinding, 4>& bindings);
     void UnregisterAllHotkeys();
 
     bool UpdateHotkey(const HotkeyBinding& binding);
@@ -30,7 +30,7 @@ public:
 private:
     HWND m_hwnd = nullptr;
     HotkeyCallback m_callback;
-    std::array<HotkeyBinding, 3> m_bindings;
+    std::array<HotkeyBinding, 4> m_bindings;
     bool m_registered = false;
 };
 
